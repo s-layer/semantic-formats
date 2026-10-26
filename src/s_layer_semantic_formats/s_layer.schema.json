@@ -1,0 +1,802 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "The s_layer block written in dbt config.meta on a metric, dimension or fact. This schema checks shape only: which kinds apply to which member type, and rules between sections (time only on date and datetime kinds, display keys per kind, implied additivity), are checked by s_layer_semantic_formats.validate_block.",
+  "$defs": {
+    "Aggregation": {
+      "additionalProperties": false,
+      "description": "Additivity, stated only when nothing upstream declares it.",
+      "patternProperties": {
+        "^x-.+": {}
+      },
+      "properties": {
+        "additivity": {
+          "enum": [
+            "additive",
+            "semi_additive",
+            "non_additive"
+          ],
+          "title": "Additivity",
+          "type": "string"
+        },
+        "by": {
+          "anyOf": [
+            {
+              "items": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "minItems": 1,
+              "type": "array",
+              "uniqueItems": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Dimensions a semi_additive metric must not be summed over.",
+          "title": "By"
+        }
+      },
+      "required": [
+        "additivity"
+      ],
+      "title": "Aggregation",
+      "type": "object"
+    },
+    "BooleanLabels": {
+      "additionalProperties": false,
+      "description": "Display labels for the two values of a flag.",
+      "properties": {
+        "true": {
+          "minLength": 1,
+          "title": "True",
+          "type": "string"
+        },
+        "false": {
+          "minLength": 1,
+          "title": "False",
+          "type": "string"
+        }
+      },
+      "required": [
+        "true",
+        "false"
+      ],
+      "title": "BooleanLabels",
+      "type": "object"
+    },
+    "BooleanValue": {
+      "additionalProperties": false,
+      "description": "Two-valued flag.",
+      "patternProperties": {
+        "^x-.+": {}
+      },
+      "properties": {
+        "kind": {
+          "const": "boolean",
+          "title": "Kind",
+          "type": "string"
+        },
+        "labels": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BooleanLabels"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "BooleanValue",
+      "type": "object"
+    },
+    "BytesValue": {
+      "additionalProperties": false,
+      "description": "Data size; compacts in 1000 or 1024 steps.",
+      "patternProperties": {
+        "^x-.+": {}
+      },
+      "properties": {
+        "kind": {
+          "const": "bytes",
+          "title": "Kind",
+          "type": "string"
+        },
+        "unit": {
+          "default": "B",
+          "enum": [
+            "B",
+            "KB",
+            "MB",
+            "GB",
+            "TB",
+            "PB",
+            "EB",
+            "KiB",
+            "MiB",
+            "GiB",
+            "TiB",
+            "PiB",
+            "EiB"
+          ],
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "BytesValue",
+      "type": "object"
+    },
+    "CategoryValue": {
+      "additionalProperties": false,
+      "description": "Nominal or ordered label.",
+      "patternProperties": {
+        "^x-.+": {}
+      },
+      "properties": {
+        "kind": {
+          "const": "category",
+          "title": "Kind",
+          "type": "string"
+        },
+        "order": {
+          "anyOf": [
+            {
+              "items": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "minItems": 1,
+              "type": "array",
+              "uniqueItems": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Category values in order; makes the category ordinal.",
+          "title": "Order"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "CategoryValue",
+      "type": "object"
+    },
+    "CountValue": {
+      "additionalProperties": false,
+      "description": "Whole number of things, zero baseline.",
+      "patternProperties": {
+        "^x-.+": {}
+      },
+      "properties": {
+        "kind": {
+          "const": "count",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "CountValue",
+      "type": "object"
+    },
+    "CurrencyValue": {
+      "additionalProperties": false,
+      "description": "Money amount.",
+      "patternProperties": {
+        "^x-.+": {}
+      },
+      "properties": {
+        "kind": {
+          "const": "currency",
+          "title": "Kind",
+          "type": "string"
+        },
+        "currency": {
+          "description": "ISO-4217 currency code, such as USD.",
+          "pattern": "^[A-Z]{3}$",
+          "title": "Currency",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "currency"
+      ],
+      "title": "CurrencyValue",
+      "type": "object"
+    },
+    "DateValue": {
+      "additionalProperties": false,
+      "description": "Temporal axis, calendar dates.",
+      "patternProperties": {
+        "^x-.+": {}
+      },
+      "properties": {
+        "kind": {
+          "const": "date",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "DateValue",
+      "type": "object"
+    },
+    "DatetimeValue": {
+      "additionalProperties": false,
+      "description": "Temporal axis, timestamps.",
+      "patternProperties": {
+        "^x-.+": {}
+      },
+      "properties": {
+        "kind": {
+          "const": "datetime",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "DatetimeValue",
+      "type": "object"
+    },
+    "Decimals": {
+      "additionalProperties": false,
+      "description": "Fraction digits as a bound. ``min`` defaults to 0; ``min == max`` is exact.\n\nAccepts ``{min, max}`` or a ``[min, max]`` pair. The normal form is the pair.",
+      "properties": {
+        "min": {
+          "default": 0,
+          "maximum": 20,
+          "minimum": 0,
+          "title": "Min",
+          "type": "integer"
+        },
+        "max": {
+          "maximum": 20,
+          "minimum": 0,
+          "title": "Max",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "max"
+      ],
+      "title": "Decimals",
+      "type": "object"
+    },
+    "Display": {
+      "additionalProperties": false,
+      "description": "Rendering hints. All optional; meaning lives in ``value``.",
+      "patternProperties": {
+        "^x-.+": {}
+      },
+      "properties": {
+        "decimals": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Decimals"
+            },
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "maximum": 20,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "maximum": 20,
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "compact": {
+          "anyOf": [
+            {
+              "enum": [
+                "none",
+                "auto",
+                "thousands",
+                "millions",
+                "billions"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Compact"
+        },
+        "negative": {
+          "anyOf": [
+            {
+              "enum": [
+                "minus",
+                "parentheses"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Defaults to minus on numeric kinds.",
+          "title": "Negative"
+        },
+        "grouping": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Defaults to true on numeric kinds and false on identifier.",
+          "title": "Grouping"
+        },
+        "date_style": {
+          "anyOf": [
+            {
+              "enum": [
+                "short",
+                "medium",
+                "long",
+                "iso"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Date Style"
+        }
+      },
+      "title": "Display",
+      "type": "object"
+    },
+    "DurationValue": {
+      "additionalProperties": false,
+      "description": "Elapsed time.",
+      "patternProperties": {
+        "^x-.+": {}
+      },
+      "properties": {
+        "kind": {
+          "const": "duration",
+          "title": "Kind",
+          "type": "string"
+        },
+        "unit": {
+          "enum": [
+            "ms",
+            "s",
+            "min",
+            "h",
+            "d"
+          ],
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "unit"
+      ],
+      "title": "DurationValue",
+      "type": "object"
+    },
+    "GeoValue": {
+      "additionalProperties": false,
+      "description": "Place; enables maps.",
+      "patternProperties": {
+        "^x-.+": {}
+      },
+      "properties": {
+        "kind": {
+          "const": "geo",
+          "title": "Kind",
+          "type": "string"
+        },
+        "level": {
+          "enum": [
+            "country",
+            "region",
+            "state",
+            "city",
+            "postal_code",
+            "latitude",
+            "longitude"
+          ],
+          "title": "Level",
+          "type": "string"
+        },
+        "code": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Coding scheme of the values, such as iso3166-1-alpha-2.",
+          "title": "Code"
+        }
+      },
+      "required": [
+        "kind",
+        "level"
+      ],
+      "title": "GeoValue",
+      "type": "object"
+    },
+    "IdentifierValue": {
+      "additionalProperties": false,
+      "description": "Shown without grouping; never aggregated.",
+      "patternProperties": {
+        "^x-.+": {}
+      },
+      "properties": {
+        "kind": {
+          "const": "identifier",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "IdentifierValue",
+      "type": "object"
+    },
+    "NumberValue": {
+      "additionalProperties": false,
+      "description": "Generic quantity, decimal.",
+      "patternProperties": {
+        "^x-.+": {}
+      },
+      "properties": {
+        "kind": {
+          "const": "number",
+          "title": "Kind",
+          "type": "string"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional unit, as a UCUM code.",
+          "title": "Unit"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "NumberValue",
+      "type": "object"
+    },
+    "PercentageValue": {
+      "additionalProperties": false,
+      "description": "A proportion; never summed.",
+      "patternProperties": {
+        "^x-.+": {}
+      },
+      "properties": {
+        "kind": {
+          "const": "percentage",
+          "title": "Kind",
+          "type": "string"
+        },
+        "scale": {
+          "default": "fraction",
+          "description": "Whether 0.12 (fraction) or 12 (percent) means 12%.",
+          "enum": [
+            "fraction",
+            "percent"
+          ],
+          "title": "Scale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "PercentageValue",
+      "type": "object"
+    },
+    "QuantityValue": {
+      "additionalProperties": false,
+      "description": "Physical measure with a unit.",
+      "patternProperties": {
+        "^x-.+": {}
+      },
+      "properties": {
+        "kind": {
+          "const": "quantity",
+          "title": "Kind",
+          "type": "string"
+        },
+        "unit": {
+          "description": "UCUM unit code, such as km or kg.",
+          "minLength": 1,
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "unit"
+      ],
+      "title": "QuantityValue",
+      "type": "object"
+    },
+    "ScoreValue": {
+      "additionalProperties": false,
+      "description": "Bounded scale; averaged, not summed.",
+      "patternProperties": {
+        "^x-.+": {}
+      },
+      "properties": {
+        "kind": {
+          "const": "score",
+          "title": "Kind",
+          "type": "string"
+        },
+        "range": {
+          "description": "[min, max], with min < max.",
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Range",
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "range"
+      ],
+      "title": "ScoreValue",
+      "type": "object"
+    },
+    "Time": {
+      "additionalProperties": false,
+      "description": "Temporal settings for date and datetime dimensions.",
+      "patternProperties": {
+        "^x-.+": {}
+      },
+      "properties": {
+        "grain": {
+          "anyOf": [
+            {
+              "enum": [
+                "second",
+                "minute",
+                "hour",
+                "day",
+                "week",
+                "month",
+                "quarter",
+                "year"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Grain"
+        },
+        "fiscal_year_start": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Month number (1-12) the fiscal year starts in.",
+          "title": "Fiscal Year Start"
+        }
+      },
+      "title": "Time",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "patternProperties": {
+    "^x-.+": {}
+  },
+  "properties": {
+    "value": {
+      "discriminator": {
+        "mapping": {
+          "boolean": "#/$defs/BooleanValue",
+          "bytes": "#/$defs/BytesValue",
+          "category": "#/$defs/CategoryValue",
+          "count": "#/$defs/CountValue",
+          "currency": "#/$defs/CurrencyValue",
+          "date": "#/$defs/DateValue",
+          "datetime": "#/$defs/DatetimeValue",
+          "duration": "#/$defs/DurationValue",
+          "geo": "#/$defs/GeoValue",
+          "identifier": "#/$defs/IdentifierValue",
+          "number": "#/$defs/NumberValue",
+          "percentage": "#/$defs/PercentageValue",
+          "quantity": "#/$defs/QuantityValue",
+          "score": "#/$defs/ScoreValue"
+        },
+        "propertyName": "kind"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/NumberValue"
+        },
+        {
+          "$ref": "#/$defs/CountValue"
+        },
+        {
+          "$ref": "#/$defs/CurrencyValue"
+        },
+        {
+          "$ref": "#/$defs/PercentageValue"
+        },
+        {
+          "$ref": "#/$defs/DurationValue"
+        },
+        {
+          "$ref": "#/$defs/BytesValue"
+        },
+        {
+          "$ref": "#/$defs/QuantityValue"
+        },
+        {
+          "$ref": "#/$defs/ScoreValue"
+        },
+        {
+          "$ref": "#/$defs/CategoryValue"
+        },
+        {
+          "$ref": "#/$defs/GeoValue"
+        },
+        {
+          "$ref": "#/$defs/DateValue"
+        },
+        {
+          "$ref": "#/$defs/DatetimeValue"
+        },
+        {
+          "$ref": "#/$defs/IdentifierValue"
+        },
+        {
+          "$ref": "#/$defs/BooleanValue"
+        }
+      ],
+      "title": "Value"
+    },
+    "display": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Display"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "time": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Time"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "aggregation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Aggregation"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "label": {
+      "anyOf": [
+        {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Only where the platform has no label slot.",
+      "title": "Label"
+    },
+    "synonyms": {
+      "anyOf": [
+        {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Only where the platform has no synonyms slot.",
+      "title": "Synonyms"
+    }
+  },
+  "required": [
+    "value"
+  ],
+  "title": "S-LAYER semantic format block",
+  "type": "object"
+}

@@ -5,7 +5,8 @@ This document provides context for AI assistants (like Claude Code) working on t
 ## Project Structure
 
 - **Source**: `src/s_layer_semantic_formats/` - All package code
-- **Tests**: `tests/` - Pytest test suite with fixtures in conftest.py
+- **Tests**: `tests/` - Pytest test suite with fixtures in conftest.py, hypothesis strategies in strategies.py
+- **Schema**: `src/s_layer_semantic_formats/s_layer.schema.json` is generated from the models; run `just schema` after changing them (a prek hook fails when it is stale)
 - **Build**: uv + pyproject.toml, uv_build backend
 - **Python**: >=3.11, strict type checking enabled
 
