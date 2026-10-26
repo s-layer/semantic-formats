@@ -451,7 +451,7 @@ Value = Annotated[
     | BooleanValue,
     Field(discriminator="kind"),
 ]
-"""What the value means: one of the kind models, chosen by ``kind``."""
+"""What the value means, as one of the kind models chosen by ``kind``."""
 
 
 # --------------------------------------------------------------------------------------

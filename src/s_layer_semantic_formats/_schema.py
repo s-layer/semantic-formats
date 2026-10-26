@@ -23,7 +23,12 @@ _DESCRIPTION = (
 
 
 def json_schema() -> dict[str, Any]:
-    """Generate the JSON Schema for an ``s_layer`` block from the models."""
+    """
+    Generate the JSON Schema for an ``s_layer`` block from the models.
+
+    Returns:
+        A draft 2020-12 JSON Schema, as a dict.
+    """
     generated = SLayerBlock.model_json_schema()
     generated.pop("description", None)
     return {"$schema": _DRAFT, "description": _DESCRIPTION, **generated}
@@ -35,6 +40,11 @@ def render_schema() -> str:
 
 
 def load_schema() -> dict[str, Any]:
-    """Load the committed schema that ships with the package."""
+    """
+    Load the committed schema that ships with the package.
+
+    Returns:
+        The schema stored at ``SCHEMA_PATH``, as a dict.
+    """
     loaded: dict[str, Any] = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
     return loaded
