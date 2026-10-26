@@ -496,7 +496,7 @@ DecimalsInput = Annotated[
     Decimals,
     BeforeValidator(
         _decimals_from_pair,
-        json_schema_input_type=Decimals | tuple[DecimalPlaces, DecimalPlaces],
+        json_schema_input_type=Decimals | tuple[DecimalPlaces | None, DecimalPlaces],
     ),
 ]
 

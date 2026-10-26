@@ -72,3 +72,8 @@ def test_schema_accepts_extension_keys() -> None:
 )
 def test_schema_accepts_null_on_keys_with_a_default(data: dict[str, Any]) -> None:
     assert Draft202012Validator(load_schema()).is_valid(data)  # pyright: ignore[reportUnknownMemberType]
+
+
+def test_schema_accepts_null_min_in_the_decimals_pair() -> None:
+    data = {"value": {"kind": "count"}, "display": {"decimals": [None, 2]}}
+    assert Draft202012Validator(load_schema()).is_valid(data)  # pyright: ignore[reportUnknownMemberType]

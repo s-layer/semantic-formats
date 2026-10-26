@@ -311,9 +311,16 @@
               "minItems": 2,
               "prefixItems": [
                 {
-                  "maximum": 20,
-                  "minimum": 0,
-                  "type": "integer"
+                  "anyOf": [
+                    {
+                      "maximum": 20,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 },
                 {
                   "maximum": 20,
