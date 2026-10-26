@@ -48,8 +48,8 @@ Open value lists
    Bytes units are ``B``, ``KB`` to ``EB`` and ``KiB`` to ``EiB``. A number's optional
    ``unit`` is any non-empty string, like a quantity's UCUM code. A currency is checked only
    against the pattern ``^[A-Z]{3}$``, not against a list of ISO 4217 codes, and a geo
-   ``code`` is any non-empty string [4]. Checking against full code lists would tie the
-   package to lists that change; the pattern catches the common mistakes, such as ``usd``.
+   ``code`` is any non-empty string [4]. The currency pattern catches mistakes such as
+   ``usd``, but it does not check that a code is actually assigned.
 
 Score ranges
    A range is two finite numbers with ``min < max``. Whole numbers are written as integers in

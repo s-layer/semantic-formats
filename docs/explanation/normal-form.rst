@@ -96,8 +96,8 @@ How equality works
 ------------------
 
 Two :py:class:`SLayerBlock` objects are equal when the canonical JSON text of their normal
-forms is equal: sorted keys, no whitespace, the text that ``json.dumps`` writes. Hashing uses
-the same text, so equal blocks hash alike and work as set members and dictionary keys.
+forms is equal: sorted keys, no whitespace and non-ASCII characters written as they are.
+Hashing uses the same text, so equal blocks hash alike and work as set members and dictionary keys.
 
 Comparing text rather than Python values has one visible effect. In Python, ``1 == 1.0 ==
 True``. In JSON text they are ``1``, ``1.0`` and ``true``. Inside extension values, which the
@@ -111,9 +111,8 @@ package keeps exactly as written, those are three different blocks:
    ... )
    False
 
-This keeps equality the same in every language. A reader in another language that parses
-the tag JSON sees ``1`` and ``1.0`` as written, and would disagree with a Python tool that
-called them equal.
+Comparing text gives an answer that a tool in any language can reproduce from the same JSON,
+without depending on how that language compares numbers and booleans.
 
 How S_LAYER_SPEC derives from the normal form
 ---------------------------------------------

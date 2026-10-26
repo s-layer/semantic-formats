@@ -137,7 +137,7 @@ The schema accepts ``null`` for an optional key
    This is intended: ``null`` means the key is absent, as it does for
    :py:func:`validate_block`.
 
-``json_schema()`` and ``load_schema()`` both exist
+:py:func:`json_schema` and :py:func:`load_schema` both exist
    :py:func:`json_schema` generates the schema from the models at runtime and
    :py:func:`load_schema` reads the shipped file. In a released package they are equal; use
    :py:func:`load_schema`.

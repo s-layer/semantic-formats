@@ -157,7 +157,7 @@ kinds:
    * - ``compact``
      - ``none``, ``auto``, ``thousands``, ``millions``, ``billions``
      - numeric kinds
-     - none filled in
+     - not filled in
    * - ``negative``
      - ``minus`` or ``parentheses``
      - numeric kinds
@@ -169,7 +169,7 @@ kinds:
    * - ``date_style``
      - ``short``, ``medium``, ``long``, ``iso``
      - ``date``, ``datetime``
-     - none filled in
+     - not filled in
 
 The numeric kinds are ``number``, ``count``, ``currency``, ``percentage``, ``duration``,
 ``bytes``, ``quantity`` and ``score``.
@@ -202,10 +202,10 @@ Step 3: Add time settings (date and datetime dimensions only)
    semantic_models:
      - name: orders
        dimensions:
-         - name: order_date
+         - name: order_month
            type: time
            type_params:
-             time_granularity: day
+             time_granularity: month
            config:
              meta:
                s_layer:

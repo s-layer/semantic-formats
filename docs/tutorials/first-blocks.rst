@@ -29,8 +29,8 @@ Write the dbt YAML
 ------------------
 
 Save this as ``metrics.yml``. It is a cut-down dbt property file: one semantic model with an
-``order_date`` dimension, and two metrics. Each member carries an ``s_layer`` block under
-``config.meta``.
+``order_date`` dimension, and two metrics. Each of these *members* carries an ``s_layer``
+block under ``config.meta``.
 
 .. code-block:: yaml
    :caption: metrics.yml
@@ -47,7 +47,7 @@ Save this as ``metrics.yml``. It is a cut-down dbt property file: one semantic m
              meta:
                s_layer:
                  value: {kind: date}
-                 time: {grain: month, fiscal_year_start: 4}
+                 time: {grain: day, fiscal_year_start: 4}
 
    metrics:
      - name: revenue
@@ -145,7 +145,7 @@ Change ``usd`` to ``USD`` in ``metrics.yml``. The whole file now reads:
              meta:
                s_layer:
                  value: {kind: date}
-                 time: {grain: month, fiscal_year_start: 4}
+                 time: {grain: day, fiscal_year_start: 4}
 
    metrics:
      - name: revenue
