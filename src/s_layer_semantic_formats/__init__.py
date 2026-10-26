@@ -55,8 +55,6 @@ from s_layer_semantic_formats._models import (
 )
 from s_layer_semantic_formats._schema import SCHEMA_PATH, json_schema, load_schema, render_schema
 
-__version__ = "0.1.0"
-
 __all__ = [
     "KINDS",
     "KIND_MEMBER_TYPES",

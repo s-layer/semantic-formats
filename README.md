@@ -121,7 +121,7 @@ find:
    duplicate"). A stated `aggregation` on those kinds must be `non_additive`.
 3. **Required kind keys**: `duration.unit`, `score.range` and `geo.level` are required, as
    their table rows have no `?` and no default. `boolean.labels` needs both `true` and
-   `false`.
+   `false`; unquoted YAML `true:` / `false:` keys (read as booleans) are accepted too.
 4. **Allowed values the doc leaves open**: bytes units are `B`, `KB` … `EB` and `KiB` …
    `EiB`. A number's optional `unit` is any non-empty string, like quantity's UCUM code.
    Currency is checked against `^[A-Z]{3}$` only. A geo `code` is any non-empty string.
@@ -144,7 +144,7 @@ find:
 12. **Extension keys** are allowed on the block and on `value`, `display`, `time` and
     `aggregation`, not inside `decimals`, `labels` or `range`. A key is an extension when it
     starts with lower-case `x-` and has at least one more character. Values can be any JSON
-    and are kept as they are; only object key order is sorted in the normal form.
+    (so no NaN or Infinity) and are kept as they are; only object key order is sorted in the normal form.
 13. **`null` means absent** for any optional key, and an empty `display: {}` or `time: {}`
     is the same as leaving it out.
 14. **Strict scalar types**: no coercion from strings or between bools and numbers
@@ -153,11 +153,16 @@ find:
     minus `value.kind`, `label` and `synonyms`; an empty `value` object is dropped, so a bare
     `date` block's spec is `{}`. Non-ASCII text is written as is, and the 256 limit counts
     characters and is inclusive. `from_compact_json` rejects a spec that contains `kind`,
-    `label` or `synonyms`, and treats an empty synonyms list as none.
+    `label` or `synonyms`, or NaN or Infinity. It treats an empty label or synonyms list
+    as none, and rejects a bare string of synonyms.
 16. **Equality compares the canonical JSON text** of the normal form, so extension values
     `1`, `1.0` and `true` are different.
 17. **The JSON Schema checks shape only.** Which kinds apply to which member type, and the
     rules between sections (items 2, 7, 8, 9), are enforced by the Python models and
+    `validate_block`. So are a few rules within one key that the schema does not state: `2.0`
+    where an integer is required (item 14), `min <= max` for decimals and `min < max` for a score
+    range (items 5, 6), `by` being present exactly when `semi_additive` (item 9), and finite
+    extension values (item 12). A block that passes the schema can still fail
     `validate_block`. The schema accepts `null` for optional keys, matching item 13.
 
 ## Development

@@ -60,3 +60,15 @@ def test_schema_rejects_invalid_blocks(data: dict[str, Any]) -> None:
 def test_schema_accepts_extension_keys() -> None:
     data = {"value": {"kind": "count", "x-acme": 1}, "x-lightdash": {"hidden": True}}
     assert Draft202012Validator(load_schema()).is_valid(data)  # pyright: ignore[reportUnknownMemberType]
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        {"value": {"kind": "percentage", "scale": None}},
+        {"value": {"kind": "bytes", "unit": None}},
+        {"value": {"kind": "count"}, "display": {"decimals": {"min": None, "max": 2}}},
+    ],
+)
+def test_schema_accepts_null_on_keys_with_a_default(data: dict[str, Any]) -> None:
+    assert Draft202012Validator(load_schema()).is_valid(data)  # pyright: ignore[reportUnknownMemberType]

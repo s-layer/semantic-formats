@@ -109,24 +109,31 @@
           "type": "string"
         },
         "unit": {
-          "default": "B",
-          "enum": [
-            "B",
-            "KB",
-            "MB",
-            "GB",
-            "TB",
-            "PB",
-            "EB",
-            "KiB",
-            "MiB",
-            "GiB",
-            "TiB",
-            "PiB",
-            "EiB"
+          "anyOf": [
+            {
+              "enum": [
+                "B",
+                "KB",
+                "MB",
+                "GB",
+                "TB",
+                "PB",
+                "EB",
+                "KiB",
+                "MiB",
+                "GiB",
+                "TiB",
+                "PiB",
+                "EiB"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
           ],
-          "title": "Unit",
-          "type": "string"
+          "default": "B",
+          "title": "Unit"
         }
       },
       "required": [
@@ -261,11 +268,18 @@
       "description": "Fraction digits as a bound. ``min`` defaults to 0; ``min == max`` is exact.\n\nAccepts ``{min, max}`` or a ``[min, max]`` pair. The normal form is the pair.",
       "properties": {
         "min": {
+          "anyOf": [
+            {
+              "maximum": 20,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "default": 0,
-          "maximum": 20,
-          "minimum": 0,
-          "title": "Min",
-          "type": "integer"
+          "title": "Min"
         },
         "max": {
           "maximum": 20,
@@ -529,14 +543,21 @@
           "type": "string"
         },
         "scale": {
+          "anyOf": [
+            {
+              "enum": [
+                "fraction",
+                "percent"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "default": "fraction",
           "description": "Whether 0.12 (fraction) or 12 (percent) means 12%.",
-          "enum": [
-            "fraction",
-            "percent"
-          ],
-          "title": "Scale",
-          "type": "string"
+          "title": "Scale"
         }
       },
       "required": [

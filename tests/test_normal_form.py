@@ -214,3 +214,19 @@ def test_spec_tag_value_limit_is_inclusive() -> None:
     assert spec_tag_value(block, limit=len(spec)) == spec
     with pytest.raises(SpecTooLongError):
         spec_tag_value(block, limit=len(spec) - 1)
+
+
+@pytest.mark.parametrize("spec", ['{"x-a": NaN}', '{"x-a": Infinity}', '{"x-a": [-Infinity]}'])
+def test_from_compact_json_rejects_non_finite_numbers(spec: str) -> None:
+    with pytest.raises(SLayerValidationError):
+        from_compact_json("count", spec)
+
+
+def test_from_compact_json_empty_label_is_unset() -> None:
+    assert from_compact_json("count", "", label="") == parse_block({"value": {"kind": "count"}})
+
+
+def test_from_compact_json_rejects_a_bare_string_of_synonyms() -> None:
+    with pytest.raises(SLayerValidationError) as caught:
+        from_compact_json("count", "", synonyms="orders")
+    assert [issue.path for issue in caught.value.issues] == ["synonyms"]

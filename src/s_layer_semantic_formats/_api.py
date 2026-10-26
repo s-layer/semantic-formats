@@ -194,6 +194,10 @@ def spec_tag_value(block: Mapping[str, Any] | SLayerBlock, limit: int = MAX_TAG_
     return spec
 
 
+def _reject_constant(name: str) -> object:
+    raise ValueError(f"{name} is not JSON")
+
+
 def from_compact_json(
     kind: str,
     spec: str | None,
@@ -208,9 +212,9 @@ def from_compact_json(
     Args:
         kind: The ``S_LAYER_KIND`` tag value.
         spec: The ``S_LAYER_SPEC`` tag value; ``None`` or ``""`` when the tag is not set.
-        label: The ``S_LAYER_LABEL`` tag value, if set.
+        label: The ``S_LAYER_LABEL`` tag value; ``None`` or ``""`` when the tag is not set.
         synonyms: Synonyms read from the native synonyms clause, if any. An empty list is
-            the same as none.
+            the same as none; a bare string is an error, not a list of characters.
         member_type: When given, also check the kind applies to this member type.
 
     Raises:
@@ -220,8 +224,8 @@ def from_compact_json(
     data: dict[str, Any] = {}
     if spec:
         try:
-            loaded: object = json.loads(spec)
-        except json.JSONDecodeError as error:
+            loaded: object = json.loads(spec, parse_constant=_reject_constant)
+        except ValueError as error:
             raise SLayerValidationError([Issue("", f"S_LAYER_SPEC is not JSON: {error}")]) from None
         if not isinstance(loaded, dict):
             raise SLayerValidationError([Issue("", "S_LAYER_SPEC must be a JSON object")])
@@ -239,8 +243,10 @@ def from_compact_json(
         raise SLayerValidationError(issues)
     assert isinstance(value, dict)
     data["value"] = {"kind": kind, **value}
-    if label is not None:
+    if label:
         data["label"] = label
+    if isinstance(synonyms, str):
+        raise SLayerValidationError([Issue("synonyms", "must be a list of strings, not a string")])
     synonym_list = list(synonyms) if synonyms is not None else []
     if synonym_list:
         data["synonyms"] = synonym_list

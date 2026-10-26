@@ -207,7 +207,7 @@ def test_time_on_temporal_kinds() -> None:
 @pytest.mark.parametrize(
     ("data", "path"),
     [
-        ({"value": {"kind": "currency", "currency": "USD"}, "time": {}}, "time"),
+        ({"value": {"kind": "currency", "currency": "USD"}, "time": {"grain": "month"}}, "time"),
         ({"value": {"kind": "date"}, "time": {"grain": "hour"}}, "time.grain"),
         ({"value": {"kind": "date"}, "time": {"grain": "fortnight"}}, "time.grain"),
         ({"value": {"kind": "date"}, "time": {"fiscal_year_start": 13}}, "time.fiscal_year_start"),
@@ -376,3 +376,48 @@ def test_direct_model_validation_raises_pydantic_errors() -> None:
 
     with pytest.raises(ValidationError):
         SLayerBlock.model_validate({"value": {"kind": "nope"}})
+
+
+@pytest.mark.parametrize(
+    ("with_null", "without"),
+    [
+        (
+            {"value": {"kind": "percentage", "scale": None}},
+            {"value": {"kind": "percentage"}},
+        ),
+        ({"value": {"kind": "bytes", "unit": None}}, {"value": {"kind": "bytes"}}),
+        (
+            {"value": {"kind": "count"}, "display": {"decimals": {"min": None, "max": 2}}},
+            {"value": {"kind": "count"}, "display": {"decimals": {"max": 2}}},
+        ),
+    ],
+)
+def test_null_on_a_key_with_a_default_means_absent(
+    with_null: dict[str, Any], without: dict[str, Any]
+) -> None:
+    assert parse_block(with_null) == parse_block(without)
+
+
+def test_empty_time_is_absent_on_any_kind() -> None:
+    block = parse_block({"value": {"kind": "count"}, "time": {}})
+    assert block == parse_block({"value": {"kind": "count"}})
+
+
+def test_semi_additive_without_by_says_why() -> None:
+    with pytest.raises(SLayerValidationError) as caught:
+        parse_block({"value": {"kind": "count"}, "aggregation": {"additivity": "semi_additive"}})
+    [issue] = caught.value.issues
+    assert issue.path == "aggregation.by"
+    assert issue.message == "required when additivity is semi_additive"
+
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), [1, float("-inf")]])
+def test_extension_values_must_be_finite(bad: Any) -> None:
+    assert issue_paths({"value": {"kind": "count"}, "x-a": bad}) == ["x-a"]
+
+
+def test_boolean_labels_accept_yaml_bool_keys() -> None:
+    # A YAML 1.1 loader (dbt's) reads unquoted `true:` / `false:` keys as booleans.
+    loaded = parse_block({"value": {"kind": "boolean", "labels": {True: "Yes", False: "No"}}})
+    quoted = parse_block({"value": {"kind": "boolean", "labels": {"true": "Yes", "false": "No"}}})
+    assert loaded == quoted

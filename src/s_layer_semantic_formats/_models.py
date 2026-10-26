@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import json
+import math
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Annotated, Any, Literal, LiteralString, Self, cast, get_args
 
@@ -132,6 +133,16 @@ NonEmptyStr = Annotated[str, StringConstraints(min_length=1)]
 CurrencyCode = Annotated[str, StringConstraints(pattern=r"^[A-Z]{3}$")]
 Label = Annotated[str, StringConstraints(min_length=1, max_length=MAX_LABEL_LENGTH)]
 DecimalPlaces = Annotated[int, Field(strict=True, ge=0, le=MAX_DECIMALS)]
+
+
+def _null_is_default(default: object, input_type: Any) -> BeforeValidator:
+    """``null`` means absent, so on a key with a default it takes the default."""
+    return BeforeValidator(
+        lambda value: default if value is None else value,
+        json_schema_input_type=input_type | None,
+    )
+
+
 FiniteNumber = Annotated[float, Field(strict=True, allow_inf_nan=False)]
 Month = Annotated[int, Field(strict=True, ge=1, le=12)]
 StrictBoolean = Annotated[bool, Field(strict=True)]
@@ -216,6 +227,16 @@ def _raise(title: str, errors: list[InitErrorDetails]) -> None:
         raise ValidationError.from_exception_data(title, errors)
 
 
+def _is_finite_json(value: JsonValue) -> bool:
+    if isinstance(value, float):
+        return math.isfinite(value)
+    if isinstance(value, dict):
+        return all(_is_finite_json(item) for item in value.values())
+    if isinstance(value, list):
+        return all(_is_finite_json(item) for item in value)
+    return True
+
+
 class _Strict(BaseModel):
     """Closed object: no extra keys at all."""
 
@@ -257,6 +278,20 @@ class _Extensible(BaseModel):
         _raise(cls.__name__, errors)
         raise AssertionError("unreachable")  # pragma: no cover
 
+    @model_validator(mode="after")
+    def _reject_non_finite_extensions(self) -> Self:
+        _raise(
+            type(self).__name__,
+            [
+                _custom_error(
+                    (key,), "not_finite", "must be JSON: NaN and Infinity are not allowed", value
+                )
+                for key, value in (self.__pydantic_extra__ or {}).items()
+                if not _is_finite_json(value)
+            ],
+        )
+        return self
+
     @property
     def extensions(self) -> dict[str, JsonValue]:
         """The ``x-`` keys on this object, verbatim."""
@@ -292,7 +327,7 @@ class PercentageValue(_Extensible):
     """A proportion; never summed."""
 
     kind: Literal["percentage"]
-    scale: PercentageScale = Field(
+    scale: Annotated[PercentageScale, _null_is_default("fraction", PercentageScale)] = Field(
         default="fraction", description="Whether 0.12 (fraction) or 12 (percent) means 12%."
     )
 
@@ -308,7 +343,7 @@ class BytesValue(_Extensible):
     """Data size; compacts in 1000 or 1024 steps."""
 
     kind: Literal["bytes"]
-    unit: BytesUnit = "B"
+    unit: Annotated[BytesUnit, _null_is_default("B", BytesUnit)] = "B"
 
 
 class QuantityValue(_Extensible):
@@ -378,6 +413,19 @@ class BooleanLabels(_Strict):
     true: NonEmptyStr
     false: NonEmptyStr
 
+    @model_validator(mode="before")
+    @classmethod
+    def _yaml_bool_keys(cls, data: Any) -> Any:
+        # A YAML 1.1 loader, such as dbt's, reads unquoted `true:` and `false:` as booleans.
+        if not isinstance(data, Mapping):
+            return data
+        mapping = cast("Mapping[object, object]", data)
+        out: dict[object, object] = {}
+        for key, item in mapping.items():
+            name = {True: "true", False: "false"}.get(key) if isinstance(key, bool) else None
+            out[name if name is not None and name not in mapping else key] = item
+        return out
+
 
 class BooleanValue(_Extensible):
     """Two-valued flag."""
@@ -418,7 +466,7 @@ class Decimals(_Strict):
     Accepts ``{min, max}`` or a ``[min, max]`` pair. The normal form is the pair.
     """
 
-    min: DecimalPlaces = 0
+    min: Annotated[DecimalPlaces, _null_is_default(0, DecimalPlaces)] = 0
     max: DecimalPlaces
 
     @model_validator(mode="after")
@@ -493,7 +541,7 @@ class Aggregation(_Extensible):
                 type(self).__name__,
                 [
                     _custom_error(
-                        ("by",), "missing", "required when additivity is semi_additive", None
+                        ("by",), "by_required", "required when additivity is semi_additive", None
                     )
                 ],
             )
@@ -619,7 +667,7 @@ class SLayerBlock(_Extensible):
     def _cross_field_errors(self) -> list[InitErrorDetails]:
         kind = self.kind
         errors: list[InitErrorDetails] = []
-        if self.time is not None:
+        if self.time is not None and _dump(self.time):
             if kind not in TEMPORAL_KINDS:
                 errors.append(
                     _custom_error(
