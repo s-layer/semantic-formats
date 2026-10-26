@@ -10,7 +10,7 @@ from s_layer_semantic_formats import (
     KINDS,
     CurrencyValue,
     Kind,
-    SLayerBlock,
+    SemanticFormat,
     SLayerValidationError,
     implied_additivity,
     parse_block,
@@ -375,7 +375,7 @@ def test_direct_model_validation_raises_pydantic_errors() -> None:
     from pydantic import ValidationError
 
     with pytest.raises(ValidationError):
-        SLayerBlock.model_validate({"value": {"kind": "nope"}})
+        SemanticFormat.model_validate({"value": {"kind": "nope"}})
 
 
 @pytest.mark.parametrize(
@@ -421,3 +421,31 @@ def test_boolean_labels_accept_yaml_bool_keys() -> None:
     loaded = parse_block({"value": {"kind": "boolean", "labels": {True: "Yes", False: "No"}}})
     quoted = parse_block({"value": {"kind": "boolean", "labels": {"true": "Yes", "false": "No"}}})
     assert loaded == quoted
+
+
+def test_slayerblock_is_a_deprecated_alias_of_semantic_format() -> None:
+    import s_layer_semantic_formats
+
+    with pytest.warns(DeprecationWarning, match="use SemanticFormat instead"):
+        alias = s_layer_semantic_formats.SLayerBlock
+    assert alias is SemanticFormat
+
+
+def test_importing_slayerblock_by_name_warns() -> None:
+    with pytest.warns(DeprecationWarning, match="SLayerBlock is deprecated"):
+        from s_layer_semantic_formats import SLayerBlock
+    assert SLayerBlock is SemanticFormat
+
+
+def test_slayerblock_is_not_exported_by_star_import() -> None:
+    import s_layer_semantic_formats
+
+    assert "SLayerBlock" not in s_layer_semantic_formats.__all__
+    assert "SemanticFormat" in s_layer_semantic_formats.__all__
+
+
+def test_unknown_attributes_still_raise() -> None:
+    import s_layer_semantic_formats
+
+    with pytest.raises(AttributeError, match="no attribute 'NoSuchName'"):
+        getattr(s_layer_semantic_formats, "NoSuchName")  # noqa: B009

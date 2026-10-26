@@ -175,4 +175,4 @@ See also
 
 - :ref:`explanation-normal-form` explains how the normal form is built.
 - :ref:`howto-round-trip-tags` shows how tags are written and read.
-- :py:meth:`SLayerBlock.normal_form` in the API reference.
+- :py:meth:`SemanticFormat.normal_form` in the API reference.

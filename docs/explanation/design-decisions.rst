@@ -27,7 +27,7 @@ numeric kinds, with ``grouping: false`` on ``identifier`` [1]. Every other optio
 left out when absent, so a missing ``compact`` is not the same as ``compact: none``.
 
 Implied additivity follows the same restraint. ``percentage`` and ``score`` imply
-``non_additive``, and :py:func:`implied_additivity` and :py:attr:`SLayerBlock.additivity`
+``non_additive``, and :py:func:`implied_additivity` and :py:attr:`SemanticFormat.additivity`
 report it, but the normal form and ``S_LAYER_SPEC`` carry an ``aggregation`` only when
 someone wrote one: derive, don't duplicate. A stated ``aggregation`` on those two kinds must
 be ``non_additive`` [2].

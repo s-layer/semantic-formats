@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from s_layer_semantic_formats._models import SLayerBlock
+from s_layer_semantic_formats._models import SemanticFormat
 
 __all__ = ["SCHEMA_PATH", "json_schema", "load_schema", "render_schema"]
 
@@ -29,7 +29,7 @@ def json_schema() -> dict[str, Any]:
     Returns:
         A draft 2020-12 JSON Schema, as a dict.
     """
-    generated = SLayerBlock.model_json_schema()
+    generated = SemanticFormat.model_json_schema()
     generated.pop("description", None)
     return {"$schema": _DRAFT, "description": _DESCRIPTION, **generated}
 

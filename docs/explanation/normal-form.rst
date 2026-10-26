@@ -27,7 +27,7 @@ The normal form is the block as plain JSON-ready data, built by a fixed set of s
 - object keys are sorted. List order is kept, because it can carry meaning: a category's
   ``order`` is its ranking.
 
-:py:func:`normalize` returns it, as does :py:meth:`SLayerBlock.normal_form`:
+:py:func:`normalize` returns it, as does :py:meth:`SemanticFormat.normal_form`:
 
 .. code-block:: pycon
 
@@ -76,7 +76,7 @@ Implied values that are not filled in
 -------------------------------------
 
 ``percentage`` and ``score`` are always non-additive. That rule is exposed by
-:py:func:`implied_additivity` and :py:attr:`SLayerBlock.additivity`, but it is not written
+:py:func:`implied_additivity` and :py:attr:`SemanticFormat.additivity`, but it is not written
 into the normal form. The normal form holds an ``aggregation`` section only when someone
 wrote one.
 
@@ -95,7 +95,7 @@ so copying it into every block would only add a second place for it to go wrong.
 How equality works
 ------------------
 
-Two :py:class:`SLayerBlock` objects are equal when the canonical JSON text of their normal
+Two :py:class:`SemanticFormat` objects are equal when the canonical JSON text of their normal
 forms is equal: sorted keys, no whitespace and non-ASCII characters written as they are.
 Hashing uses the same text, so equal blocks hash alike and work as set members and dictionary keys.
 

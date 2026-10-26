@@ -100,7 +100,7 @@ except SLayerValidationError as error:
 | `from_compact_json(kind, spec, *, label, synonyms, ...)` | Rebuild a block from `S_LAYER_KIND`, `S_LAYER_SPEC` and label   |
 | `implied_additivity(kind)`                               | `"non_additive"` for percentage and score, else `None`          |
 | `json_schema()`, `load_schema()`, `SCHEMA_PATH`          | The generated schema, and the committed copy                    |
-| `SLayerBlock` and the section and value models           | The typed block; `block.kind`, `block.additivity`, `.extensions` |
+| `SemanticFormat` and the section and value models           | The typed block; `block.kind`, `block.additivity`, `.extensions` |
 
 Blocks compare equal (`==`, `hash`) on their normal form, so `{max: 2}` and
 `{min: 0, max: 2}` are the same value.
@@ -116,7 +116,7 @@ find:
    optional key (`compact`, `date_style`, `grain`, `fiscal_year_start`, `code`, number
    `unit`) is left out when absent, so a missing `compact` is not equal to `compact: none`.
 2. **Implied additivity is not written into the block.** `percentage` and `score` imply
-   `non_additive`, exposed by `implied_additivity()` and `SLayerBlock.additivity`, but the
+   `non_additive`, exposed by `implied_additivity()` and `SemanticFormat.additivity`, but the
    normal form and `S_LAYER_SPEC` only carry an `aggregation` someone wrote ("derive, don't
    duplicate"). A stated `aggregation` on those kinds must be `non_additive`.
 3. **Required kind keys**: `duration.unit`, `score.range` and `geo.level` are required, as
