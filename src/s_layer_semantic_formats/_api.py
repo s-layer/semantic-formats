@@ -79,6 +79,12 @@ def parse_block(data: Mapping[str, Any] | SLayerBlock) -> SLayerBlock:
     """
     Parse a block without checking which member type it is attached to.
 
+    Args:
+        data: The block as loaded from YAML or JSON, or an already-parsed block.
+
+    Returns:
+        The parsed block; an ``SLayerBlock`` passed in is returned as is.
+
     Raises:
         SLayerValidationError: The data is not a valid block.
     """
@@ -91,7 +97,16 @@ def parse_block(data: Mapping[str, Any] | SLayerBlock) -> SLayerBlock:
 
 
 def member_type_issues(block: SLayerBlock, member_type: MemberType) -> list[Issue]:
-    """List why a valid block cannot be attached to ``member_type`` (empty when it can)."""
+    """
+    List why a valid block cannot be attached to ``member_type``.
+
+    Args:
+        block: A parsed block.
+        member_type: ``"metric"``, ``"fact"`` or ``"dimension"``.
+
+    Returns:
+        One issue per problem; empty when the block fits the member type.
+    """
     issues: list[Issue] = []
     allowed = KIND_MEMBER_TYPES[block.kind]
     if member_type not in allowed:
@@ -145,6 +160,12 @@ def normalize(block: Mapping[str, Any] | SLayerBlock) -> dict[str, JsonValue]:
     Defaults are filled in, keys are sorted and decimals are a ``[min, max]`` pair, so
     ``{"max": 2}`` and ``{"min": 0, "max": 2}`` normalise to the same value.
 
+    Args:
+        block: A block as loaded from YAML or JSON, or an already-parsed block.
+
+    Returns:
+        The normal form, ready for ``json.dumps``.
+
     Raises:
         SLayerValidationError: ``block`` is a mapping that is not a valid block.
     """
@@ -171,6 +192,15 @@ def to_compact_json(block: Mapping[str, Any] | SLayerBlock) -> str:
     ``S_LAYER_KIND``, ``S_LAYER_LABEL`` and the native synonyms clause), with sorted keys and
     no whitespace. An empty ``value`` object is left out.
 
+    Args:
+        block: A block as loaded from YAML or JSON, or an already-parsed block.
+
+    Returns:
+        The compact JSON text.
+
+    Raises:
+        SLayerValidationError: ``block`` is a mapping that is not a valid block.
+
     Example:
         .. code-block:: python
 
@@ -184,7 +214,15 @@ def spec_tag_value(block: Mapping[str, Any] | SLayerBlock, limit: int = MAX_TAG_
     """
     Return :func:`to_compact_json`, raising if it does not fit in a tag value.
 
+    Args:
+        block: A block as loaded from YAML or JSON, or an already-parsed block.
+        limit: The longest allowed value, in characters (inclusive).
+
+    Returns:
+        The ``S_LAYER_SPEC`` tag value.
+
     Raises:
+        SLayerValidationError: ``block`` is a mapping that is not a valid block.
         SpecTooLongError: The payload is longer than ``limit`` characters. It is never
             truncated.
     """
@@ -216,6 +254,9 @@ def from_compact_json(
         synonyms: Synonyms read from the native synonyms clause, if any. An empty list is
             the same as none; a bare string is an error, not a list of characters.
         member_type: When given, also check the kind applies to this member type.
+
+    Returns:
+        The rebuilt block, equal to the one the tags were written from.
 
     Raises:
         SLayerValidationError: The payload is not JSON, repeats a key that travels

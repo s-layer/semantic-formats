@@ -15,7 +15,8 @@ This document provides context for AI assistants (like Claude Code) working on t
 All code must pass these checks before committing. We use [prek](https://prek.j178.dev/) — a fast, Rust-based runner for `.pre-commit-config.yaml` hooks:
 
 ```bash
-prek run --all-files  # Runs all hooks (typecheck, lint, format, test)
+prek run --all-files  # Runs all hooks (typecheck, lint, format, schema check)
+uv run pytest         # Tests (not a prek hook)
 ```
 
 Or run individually:

@@ -1,0 +1,34 @@
+version: 1
+
+source_terms:
+  - canonical: "SLayerBlock"
+    variants: []
+    source: "class SLayerBlock in src/s_layer_semantic_formats/_models.py"
+  - canonical: "SLayerValidationError"
+    variants: []
+    source: "class SLayerValidationError in src/s_layer_semantic_formats/_errors.py"
+  - canonical: "S_LAYER_SPEC"
+    variants: ["S_LAYER_SPEC tag", "spec tag"]
+    source: "to_compact_json docstring in src/s_layer_semantic_formats/_api.py"
+
+proper_nouns:
+  - canonical: "dbt"
+    variants: ["DBT", "Dbt"]
+  - canonical: "DuckDB"
+    variants: ["Duckdb"]
+  - canonical: "JSON Schema"
+    variants: ["JSON schema", "json schema"]
+  - canonical: "PyYAML"
+    variants: ["pyyaml"]
+
+project_terms:
+  - canonical: "block"
+    variants: ["s_layer config", "s_layer mapping"]
+  - canonical: "member type"
+    variants: ["member kind"]
+  - canonical: "payload"
+    variants: ["spec string"]
+  - canonical: "normal form"
+    variants: ["normalized form", "canonical form"]
+
+overrides: {}

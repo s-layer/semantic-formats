@@ -24,7 +24,8 @@ prek install
 All code must pass strict quality checks before committing. The unified command:
 
 ```bash
-prek run --all-files  # Runs typecheck, lint, format, test
+prek run --all-files  # Runs typecheck, lint, format, schema check
+uv run pytest         # Tests (not a prek hook)
 ```
 
 Or run individually:
@@ -86,7 +87,7 @@ Automated via ruff isort (I rules) - runs as part of `ruff format`
 
 1. Create a feature branch from `main`
 2. Make code changes
-3. Run quality gates: `prek run --all-files`
+3. Run quality gates: `prek run --all-files` and `uv run pytest`
 4. Commit with conventional commit format:
    ```
    <type>(<scope>): <message>
