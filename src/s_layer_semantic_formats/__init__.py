@@ -5,9 +5,6 @@ Typed models for the ``s_layer`` block written in dbt ``config.meta`` on metrics
 and facts, its normal form, the compact ``S_LAYER_SPEC`` tag payload and the JSON Schema.
 """
 
-import warnings
-from typing import TYPE_CHECKING
-
 from s_layer_semantic_formats._api import (
     MAX_TAG_LENGTH,
     SPEC_EXCLUDED_KEYS,
@@ -57,25 +54,6 @@ from s_layer_semantic_formats._models import (
     implied_additivity,
 )
 from s_layer_semantic_formats._schema import SCHEMA_PATH, json_schema, load_schema, render_schema
-
-if TYPE_CHECKING:
-    # Type checkers see the deprecated name as a plain alias; at runtime ``__getattr__`` below
-    # resolves it and warns.
-    SLayerBlock = SemanticFormat
-else:
-    # Kept out of type checkers' view so that misspelled imports still fail type checking.
-    def __getattr__(name: str) -> object:
-        """Resolve ``SLayerBlock``, the deprecated name of `SemanticFormat`, with a warning."""
-        if name == "SLayerBlock":
-            warnings.warn(
-                "SLayerBlock is deprecated and will be removed in a future release; "
-                "use SemanticFormat instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return SemanticFormat
-        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-
 
 __all__ = [
     "KINDS",

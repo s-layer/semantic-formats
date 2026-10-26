@@ -423,29 +423,10 @@ def test_boolean_labels_accept_yaml_bool_keys() -> None:
     assert loaded == quoted
 
 
-def test_slayerblock_is_a_deprecated_alias_of_semantic_format() -> None:
-    import s_layer_semantic_formats
-
-    with pytest.warns(DeprecationWarning, match="use SemanticFormat instead"):
-        alias = s_layer_semantic_formats.SLayerBlock
-    assert alias is SemanticFormat
-
-
-def test_importing_slayerblock_by_name_warns() -> None:
-    with pytest.warns(DeprecationWarning, match="SLayerBlock is deprecated"):
-        from s_layer_semantic_formats import SLayerBlock
-    assert SLayerBlock is SemanticFormat
-
-
-def test_slayerblock_is_not_exported_by_star_import() -> None:
+def test_slayerblock_is_gone() -> None:
     import s_layer_semantic_formats
 
     assert "SLayerBlock" not in s_layer_semantic_formats.__all__
     assert "SemanticFormat" in s_layer_semantic_formats.__all__
-
-
-def test_unknown_attributes_still_raise() -> None:
-    import s_layer_semantic_formats
-
-    with pytest.raises(AttributeError, match="no attribute 'NoSuchName'"):
-        getattr(s_layer_semantic_formats, "NoSuchName")  # noqa: B009
+    with pytest.raises(ImportError, match="SLayerBlock"):
+        exec("from s_layer_semantic_formats import SLayerBlock")
