@@ -42,5 +42,5 @@ doc is silent.
 .. toctree::
    :hidden:
 
-   API Reference <autoapi/index>
+   reference/index
    Release notes <changelog>
