@@ -18,8 +18,29 @@ later are enough.
 Install the package
 -------------------
 
-Create a new directory for this tutorial, open a terminal in it, and install the package
-together with PyYAML, which the script uses to read the YAML file:
+Create a new directory for this tutorial and open a terminal in it. Create a virtual
+environment there, so the install does not touch your system Python, and activate it:
+
+.. tab-set::
+   :sync-group: os
+
+   .. tab-item:: macOS and Linux
+      :sync: unix
+
+      .. code-block:: bash
+
+         python3 -m venv .venv
+         source .venv/bin/activate
+
+   .. tab-item:: Windows
+      :sync: windows
+
+      .. code-block:: powershell
+
+         py -m venv .venv
+         .venv\Scripts\activate
+
+Then install the package together with PyYAML, which the script uses to read the YAML file:
 
 .. code-block:: bash
 

@@ -274,7 +274,8 @@ Step 6: Check the block
 -----------------------
 
 Save this as ``check_block.py``, paste your block between the triple quotes and set the
-member type:
+member type. The pasted lines can keep the indentation they had in the dbt file, as long as
+it is the same on every top-level key:
 
 .. code-block:: python
    :caption: check_block.py

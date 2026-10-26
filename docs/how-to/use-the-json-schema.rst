@@ -90,6 +90,11 @@ To use the schema outside Python, copy the file into your project or build:
 Any draft 2020-12 validator can then load ``s_layer.schema.json``. Copy it again when you
 upgrade the package, so the copy matches the version your Python code uses.
 
+If the tool has no Python at all, take the file from the `source repository
+<https://github.com/s-layer/semantic-formats/tree/main/src/s_layer_semantic_formats>`_
+instead. Use the release tag (``v0.1.0`` and so on) that matches the package version the
+Python side of your system uses.
+
 Know what the schema does not check
 -----------------------------------
 

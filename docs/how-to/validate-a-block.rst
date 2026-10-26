@@ -50,6 +50,34 @@ Call :py:func:`validate_block` with the block and its member type. It returns a 
 The block is frozen, so your tool can pass it around and use it as a dictionary key. The
 defaults it fills in are listed in :ref:`explanation-normal-form`.
 
+Read extension keys
+-------------------
+
+Keys that start with ``x-`` are kept as they were written. The ``extensions`` property
+returns them, on the block and on each section:
+
+.. code-block:: python
+
+   from s_layer_semantic_formats import validate_block
+
+   block = validate_block(
+       {
+           "value": {"kind": "count", "x-source": "orders"},
+           "x-acme": {"owner": "finance", "tier": 1},
+       },
+       "metric",
+   )
+
+   print(block.extensions)
+   print(block.value.extensions)
+   print(block.display.extensions)
+
+.. code-block:: text
+
+   {'x-acme': {'owner': 'finance', 'tier': 1}}
+   {'x-source': 'orders'}
+   {}
+
 Report every problem
 --------------------
 

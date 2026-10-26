@@ -1,0 +1,72 @@
+version: 1
+user_personas:
+  - name: "Python integrator"
+    skill_level: "advanced"
+    generated_at: "2026-10-26"
+    doc_pages: &pages
+      - "index.rst"
+      - "tutorials/index.rst"
+      - "tutorials/first-blocks.rst"
+      - "how-to/index.rst"
+      - "how-to/write-a-block.rst"
+      - "how-to/validate-a-block.rst"
+      - "how-to/compare-blocks.rst"
+      - "how-to/round-trip-tags.rst"
+      - "how-to/use-the-json-schema.rst"
+      - "explanation/index.rst"
+      - "explanation/the-block.rst"
+      - "explanation/normal-form.rst"
+      - "explanation/design-decisions.rst"
+      - "reference/index.rst"
+      - "changelog.md"
+    scenarios:
+      - id: S1
+        goal: "I want to validate every s_layer block my code generator reads and report all problems with their paths in one pass"
+        starting_point: "docs/index.rst"
+        persona_relevance: "A dbt code generator must stop before writing DDL when any block is invalid"
+        done_when: "Knows to call validate_block per member, catch SLayerValidationError and iterate error.issues"
+      - id: S2
+        goal: "I want to write S_LAYER_KIND, S_LAYER_SPEC and S_LAYER_LABEL tags and read them back into an equal block"
+        starting_point: "docs/index.rst"
+        persona_relevance: "dbt-s-layer and semolina style tools exchange blocks through warehouse tags"
+        done_when: "Has working code for both directions and knows what to do when the payload is over 256 characters"
+      - id: S3
+        goal: "I want to detect when the tags in the warehouse no longer match the dbt YAML"
+        starting_point: "docs/index.rst"
+        persona_relevance: "Drift checks run in CI against a live warehouse"
+        done_when: "Can rebuild a block from tags and compare it with the YAML block, and understands when two blocks are equal"
+      - id: S4
+        goal: "I want to check block shape in a TypeScript service that cannot import the Python package"
+        starting_point: "docs/index.rst"
+        persona_relevance: "BI front ends often live outside Python"
+        done_when: "Knows where to get s_layer.schema.json and what it does not check"
+      - id: S5
+        goal: "I want to read the x- extension keys my team adds, from a parsed block"
+        starting_point: "docs/index.rst"
+        persona_relevance: "Teams carry vendor data in x- keys and the integrator must surface it"
+        done_when: "Knows the attribute that returns extension keys on the block and on its sections"
+  - name: "Analytics engineer"
+    skill_level: "intermediate"
+    generated_at: "2026-10-26"
+    doc_pages: *pages
+    scenarios:
+      - id: S1
+        goal: "I want to write a valid s_layer block for an account_balance metric that must not be summed over days"
+        starting_point: "docs/index.rst"
+        persona_relevance: "Semi-additive balances are a common dbt metric"
+        done_when: "Has YAML with kind, currency and aggregation semi_additive with by"
+      - id: S2
+        goal: "I want to know which display and time keys I can put on an order_date dimension"
+        starting_point: "docs/index.rst"
+        persona_relevance: "Date dimensions need grain and fiscal year settings"
+        done_when: "Knows date_style, grain (day or coarser) and fiscal_year_start are allowed, and decimals are not"
+      - id: S3
+        goal: "I want to fix the error \"value.kind: kind 'percentage' applies to a metric, not a fact\""
+        starting_point: "docs/index.rst"
+        persona_relevance: "Validation errors are how this persona discovers the vocabulary"
+        done_when: "Understands the kind does not fit the member type and picks a fact kind"
+      - id: S4
+        goal: "I want to check my block myself before opening a pull request, without writing Python of my own"
+        starting_point: "docs/index.rst"
+        persona_relevance: "Fast feedback without waiting for CI"
+        done_when: "Has a copy-paste script and an install command that works on their machine"
