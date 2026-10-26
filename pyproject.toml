@@ -3,11 +3,28 @@ name = "s-layer-semantic-formats"
 version = "0.1.0"
 description = "The S-LAYER semantic format vocabulary: typed models, normal form and JSON Schema"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
     { name = "Anentropic", email = "ego@anentropic.com" }
 ]
 requires-python = ">=3.11"
-dependencies = []
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
+]
+dependencies = [
+    "pydantic>=2.11",
+]
+
+[project.urls]
+Homepage = "https://github.com/s-layer/semantic-formats"
+Repository = "https://github.com/s-layer/semantic-formats"
+Issues = "https://github.com/s-layer/semantic-formats/issues"
 
 [build-system]
 requires = ["uv_build>=0.9.18,<1.0.0"]
@@ -16,11 +33,14 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "basedpyright>=1.38.0",
+    "hypothesis>=6.100",
     "ipython>=9.10.0",
+    "jsonschema>=4.23",
     "pdbpp>=0.12.0.post1",
     "pytest>=8.0.0",
     "pytest-cov>=6.0.0",
     "ruff>=0.15.1",
+    "types-jsonschema>=4.26.0.20261006",
 ]
 docs = [
     "sphinx>=8.0.0",
@@ -39,8 +59,9 @@ docs = [
 # Kept in step with requires-python and ruff's target-version below.
 pythonVersion = "3.11"
 typeCheckingMode = "strict"
-include = ["src", "tests"]
+include = ["src", "tests", "scripts"]
 reportPrivateUsage = false
+reportUnnecessaryTypeIgnoreComment = "error"
 
 [tool.ruff]
 target-version = "py311"
@@ -48,7 +69,7 @@ line-length = 100
 src = ["src"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "UP", "B", "SIM", "TCH", "D"]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "TCH", "D", "TID", "BLE"]
 ignore = [
     "D1",    # don't require docstrings everywhere
     "D202",  # allow blank line after docstring (common in tests)
@@ -58,5 +79,9 @@ ignore = [
     "D413",  # blank line after last section not required
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["BLE001"]
+
 [tool.pytest.ini_options]
-addopts = "-v"
+addopts = "-v --strict-markers"
+testpaths = ["tests"]

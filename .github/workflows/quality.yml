@@ -37,7 +37,7 @@ jobs:
         run: prek run --all-files
 
       - name: Tests
-        run: uv run pytest
+        run: uv run pytest --hypothesis-profile=ci
 
       - name: Cache pruning
         if: always()

@@ -29,6 +29,12 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
+      - id: schema-up-to-date
+        name: JSON Schema matches the models
+        entry: uv run python scripts/regen_schema.py --check
+        language: system
+        files: ^(src/|scripts/regen_schema\.py$)
+        pass_filenames: false
 
   - repo: https://github.com/adamchainz/blacken-docs
     rev: 1.20.0
