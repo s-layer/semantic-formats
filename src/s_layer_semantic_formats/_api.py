@@ -255,6 +255,9 @@ def from_compact_json(
             the same as none; a bare string is an error, not a list of characters.
         member_type: When given, also check the kind applies to this member type.
 
+    Returns:
+        The rebuilt block, equal to the one the tags were written from.
+
     Raises:
         SLayerValidationError: The payload is not JSON, repeats a key that travels
             elsewhere, or does not make a valid block.

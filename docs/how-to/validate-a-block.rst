@@ -205,7 +205,7 @@ Troubleshooting
    The second argument is not one of the three member types. dbt measures and entities are
    not member types; pass the type of the metric, fact or dimension the block belongs to.
 
-A block that passed before fails after a fix
+Fixing one error reveals new ones
    Rules that compare sections, such as a ``display`` key that does not fit the kind, are
    checked once every key has the right shape. Fixing shape problems can therefore reveal
    new ones.
