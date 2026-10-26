@@ -62,6 +62,20 @@ if TYPE_CHECKING:
     # Type checkers see the deprecated name as a plain alias; at runtime ``__getattr__`` below
     # resolves it and warns.
     SLayerBlock = SemanticFormat
+else:
+    # Kept out of type checkers' view so that misspelled imports still fail type checking.
+    def __getattr__(name: str) -> object:
+        """Resolve ``SLayerBlock``, the deprecated name of `SemanticFormat`, with a warning."""
+        if name == "SLayerBlock":
+            warnings.warn(
+                "SLayerBlock is deprecated and will be removed in a future release; "
+                "use SemanticFormat instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return SemanticFormat
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = [
     "KINDS",
@@ -111,16 +125,3 @@ __all__ = [
     "to_compact_json",
     "validate_block",
 ]
-
-
-def __getattr__(name: str) -> object:
-    """Resolve ``SLayerBlock``, the deprecated name of `SemanticFormat`, with a warning."""
-    if name == "SLayerBlock":
-        warnings.warn(
-            "SLayerBlock is deprecated and will be removed in a future release; "
-            "use SemanticFormat instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return SemanticFormat
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
