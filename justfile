@@ -23,19 +23,3 @@ docs-build:
 docs-serve port="8000":
     uvx git-cliff -o CHANGELOG.md
     uv run sphinx-autobuild docs docs/_build/html --port {{port}}
-
-# Run the test suite
-test:
-    uv run pytest
-
-# Run the property tests with more examples, as CI does
-test-ci:
-    uv run pytest --hypothesis-profile=ci
-
-# Regenerate the committed JSON Schema from the models
-schema:
-    uv run python scripts/regen_schema.py
-
-# Fail if the committed JSON Schema differs from the models
-schema-check:
-    uv run python scripts/regen_schema.py --check

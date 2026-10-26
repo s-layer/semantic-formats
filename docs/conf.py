@@ -12,7 +12,6 @@ exclude_patterns = ["_build", ".venv"]
 
 extensions = [
     "autoapi.extension",
-    "sphinx.ext.napoleon",
     "sphinx_design",
     "sphinx.ext.githubpages",
     "myst_parser",
