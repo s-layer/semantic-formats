@@ -14,7 +14,7 @@ a percentage, a duration in seconds, a date at month grain). It ships typed pyda
 `S_LAYER_SPEC` tag payload and its inverse (`to_compact_json`, `spec_tag_value`,
 `from_compact_json`), and a JSON Schema generated from the models (`SCHEMA_PATH`,
 `load_schema()`, `json_schema()`). No warehouse or dbt code. dbt-s-layer writes blocks into
-warehouses; semolina reads them back. Version 0.1.0, Python >= 3.11, depends only on pydantic >= 2.11.
+warehouses; semolina reads them back. Python >= 3.11, depends only on pydantic >= 2.11.
 Inferred from: README, pyproject.toml, `__init__.__all__`.
 
 ## User Persona: Python integrator
