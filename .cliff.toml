@@ -24,7 +24,15 @@ trim = true
 [git]
 conventional_commits = true
 filter_unconventional = true
+# Rewrite or drop commits whose subject would mislead in the release notes.
+commit_preprocessors = [
+    { pattern = "^feat: rename SLayerBlock to SemanticFormat\n", replace = "feat!: rename `SLayerBlock` to `SemanticFormat` (breaking: the old name is no longer importable)\n" },
+]
 commit_parsers = [
+    # An alias added and removed again before 0.2.0; it never shipped.
+    { sha = "654543e39733cb5f44bdb07036dbc5f59a0a9c83", skip = true },
+    { sha = "318321967e78b5a4371ad32db142c633951c6dda", skip = true },
+    { message = "^chore\\(release\\)", skip = true },
     { message = "^docs", skip = true },
     { message = "^wip", skip = true },
     { message = "^feat", group = "Features" },
