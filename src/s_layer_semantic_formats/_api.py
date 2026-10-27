@@ -12,7 +12,7 @@ from s_layer_semantic_formats._models import (
     KIND_MEMBER_TYPES,
     KINDS,
     MemberType,
-    SLayerBlock,
+    SemanticFormat,
     canonical_json,
 )
 
@@ -75,7 +75,7 @@ def _from_pydantic(error: ValidationError) -> SLayerValidationError:
     return SLayerValidationError(_issue(detail) for detail in error.errors(include_url=False))
 
 
-def parse_block(data: Mapping[str, Any] | SLayerBlock) -> SLayerBlock:
+def parse_block(data: Mapping[str, Any] | SemanticFormat) -> SemanticFormat:
     """
     Parse a block without checking which member type it is attached to.
 
@@ -83,20 +83,20 @@ def parse_block(data: Mapping[str, Any] | SLayerBlock) -> SLayerBlock:
         data: The block as loaded from YAML or JSON, or an already-parsed block.
 
     Returns:
-        The parsed block; an ``SLayerBlock`` passed in is returned as is.
+        The parsed block; a ``SemanticFormat`` passed in is returned as is.
 
     Raises:
         SLayerValidationError: The data is not a valid block.
     """
-    if isinstance(data, SLayerBlock):
+    if isinstance(data, SemanticFormat):
         return data
     try:
-        return SLayerBlock.model_validate(data)
+        return SemanticFormat.model_validate(data)
     except ValidationError as error:
         raise _from_pydantic(error) from None
 
 
-def member_type_issues(block: SLayerBlock, member_type: MemberType) -> list[Issue]:
+def member_type_issues(block: SemanticFormat, member_type: MemberType) -> list[Issue]:
     """
     List why a valid block cannot be attached to ``member_type``.
 
@@ -122,7 +122,9 @@ def member_type_issues(block: SLayerBlock, member_type: MemberType) -> list[Issu
     return issues
 
 
-def validate_block(data: Mapping[str, Any] | SLayerBlock, member_type: MemberType) -> SLayerBlock:
+def validate_block(
+    data: Mapping[str, Any] | SemanticFormat, member_type: MemberType
+) -> SemanticFormat:
     """
     Validate an ``s_layer`` block for a metric, fact or dimension.
 
@@ -153,7 +155,7 @@ def validate_block(data: Mapping[str, Any] | SLayerBlock, member_type: MemberTyp
     return block
 
 
-def normalize(block: Mapping[str, Any] | SLayerBlock) -> dict[str, JsonValue]:
+def normalize(block: Mapping[str, Any] | SemanticFormat) -> dict[str, JsonValue]:
     """
     Return the block's normal form as JSON-ready data.
 
@@ -172,7 +174,7 @@ def normalize(block: Mapping[str, Any] | SLayerBlock) -> dict[str, JsonValue]:
     return parse_block(block).normal_form()
 
 
-def _spec_data(block: SLayerBlock) -> dict[str, JsonValue]:
+def _spec_data(block: SemanticFormat) -> dict[str, JsonValue]:
     data = block.normal_form()
     for key in SPEC_EXCLUDED_KEYS:
         data.pop(key, None)
@@ -184,7 +186,7 @@ def _spec_data(block: SLayerBlock) -> dict[str, JsonValue]:
     return data
 
 
-def to_compact_json(block: Mapping[str, Any] | SLayerBlock) -> str:
+def to_compact_json(block: Mapping[str, Any] | SemanticFormat) -> str:
     """
     Return the ``S_LAYER_SPEC`` payload for Snowflake and DuckDB tags.
 
@@ -210,7 +212,7 @@ def to_compact_json(block: Mapping[str, Any] | SLayerBlock) -> str:
     return canonical_json(_spec_data(parse_block(block)))
 
 
-def spec_tag_value(block: Mapping[str, Any] | SLayerBlock, limit: int = MAX_TAG_LENGTH) -> str:
+def spec_tag_value(block: Mapping[str, Any] | SemanticFormat, limit: int = MAX_TAG_LENGTH) -> str:
     """
     Return :func:`to_compact_json`, raising if it does not fit in a tag value.
 
@@ -243,7 +245,7 @@ def from_compact_json(
     label: str | None = None,
     synonyms: Iterable[str] | None = None,
     member_type: MemberType | None = None,
-) -> SLayerBlock:
+) -> SemanticFormat:
     """
     Rebuild a block from its tag values: ``S_LAYER_KIND``, ``S_LAYER_SPEC``, ``S_LAYER_LABEL``.
 

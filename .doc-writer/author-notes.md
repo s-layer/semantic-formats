@@ -21,11 +21,11 @@ run through `validate_block` for its member type. All output shown is the exact 
 ## docs/how-to/validate-a-block.rst
 - Type: how-to
 - Sources: _api.py (validate_block, parse_block, member_type_issues), _errors.py (Issue, SLayerValidationError, SpecTooLongError bases)
-- API links: validate_block, SLayerBlock, SLayerValidationError, Issue, parse_block, member_type_issues, KIND_MEMBER_TYPES, SpecTooLongError, SLayerError
+- API links: validate_block, SemanticFormat, SLayerValidationError, Issue, parse_block, member_type_issues, KIND_MEMBER_TYPES, SpecTooLongError, SLayerError
 
 ## docs/how-to/compare-blocks.rst
 - Type: how-to
-- Sources: _models.py (SLayerBlock.__eq__/__hash__, canonical_json, _dump), _api.py (normalize, from_compact_json)
+- Sources: _models.py (SemanticFormat.__eq__/__hash__, canonical_json, _dump), _api.py (normalize, from_compact_json)
 - Accuracy: `block == dict` returns False (NotImplemented on both sides falls back to identity).
 
 ## docs/how-to/round-trip-tags.rst

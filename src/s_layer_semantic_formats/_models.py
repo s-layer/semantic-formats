@@ -50,7 +50,7 @@ __all__ = [
     "NumberValue",
     "PercentageValue",
     "QuantityValue",
-    "SLayerBlock",
+    "SemanticFormat",
     "ScoreValue",
     "Time",
     "Value",
@@ -614,7 +614,7 @@ def canonical_json(data: JsonValue) -> str:
     )
 
 
-class SLayerBlock(_Extensible):
+class SemanticFormat(_Extensible):
     """
     One ``s_layer`` block: what a metric, fact or dimension means.
 
@@ -624,7 +624,7 @@ class SLayerBlock(_Extensible):
     Example:
         .. code-block:: python
 
-            block = SLayerBlock.model_validate(
+            block = SemanticFormat.model_validate(
                 {"value": {"kind": "currency", "currency": "USD"}}
             )
             block.kind  # "currency"
@@ -760,7 +760,7 @@ class SLayerBlock(_Extensible):
         return data
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, SLayerBlock):
+        if not isinstance(other, SemanticFormat):
             return NotImplemented
         return canonical_json(self.normal_form()) == canonical_json(other.normal_form())
 

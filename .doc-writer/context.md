@@ -34,7 +34,7 @@ Inferred from: README, pyproject.toml, `__init__.__all__`.
 
 ### Common Tasks
 - Validate a block for a member type: `validate_block(data, "metric")`, catch `SLayerValidationError`, read `.issues`.
-- Compare blocks / detect drift: `==` on `SLayerBlock`, or `normalize()` output.
+- Compare blocks / detect drift: `==` on `SemanticFormat`, or `normalize()` output.
 - Tag round trip: `spec_tag_value(block)` to write, `from_compact_json(kind, spec, label=..., synonyms=...)` to read.
 - JSON Schema: `load_schema()` / `SCHEMA_PATH` with `jsonschema`, editors or other languages.
 - Typed access: `block.kind`, `block.additivity`, `block.value.currency`, `block.extensions`.

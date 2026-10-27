@@ -23,7 +23,7 @@ Validate for a member type
 --------------------------
 
 Call :py:func:`validate_block` with the block and its member type. It returns a typed
-:py:class:`SLayerBlock` with the defaults filled in:
+:py:class:`SemanticFormat` with the defaults filled in:
 
 .. code-block:: python
 

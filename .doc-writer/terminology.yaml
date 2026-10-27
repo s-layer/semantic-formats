@@ -1,9 +1,9 @@
 version: 1
 
 source_terms:
-  - canonical: "SLayerBlock"
+  - canonical: "SemanticFormat"
     variants: []
-    source: "class SLayerBlock in src/s_layer_semantic_formats/_models.py"
+    source: "class SemanticFormat in src/s_layer_semantic_formats/_models.py"
   - canonical: "SLayerValidationError"
     variants: []
     source: "class SLayerValidationError in src/s_layer_semantic_formats/_errors.py"

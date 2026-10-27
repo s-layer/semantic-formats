@@ -93,7 +93,7 @@ aggregate; dimensions are what you group and filter by.
 
 Two of the metric kinds carry a rule of their own. Summing percentages or scores gives
 nonsense (two conversion rates of 10% do not add up to 20%), so ``percentage`` and ``score``
-are *non-additive* without being told, and :py:attr:`SLayerBlock.additivity` reports that.
+are *non-additive* without being told, and :py:attr:`SemanticFormat.additivity` reports that.
 
 :py:data:`KIND_MEMBER_TYPES` holds this table as data.
 

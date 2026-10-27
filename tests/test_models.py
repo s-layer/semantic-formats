@@ -10,7 +10,7 @@ from s_layer_semantic_formats import (
     KINDS,
     CurrencyValue,
     Kind,
-    SLayerBlock,
+    SemanticFormat,
     SLayerValidationError,
     implied_additivity,
     parse_block,
@@ -375,7 +375,7 @@ def test_direct_model_validation_raises_pydantic_errors() -> None:
     from pydantic import ValidationError
 
     with pytest.raises(ValidationError):
-        SLayerBlock.model_validate({"value": {"kind": "nope"}})
+        SemanticFormat.model_validate({"value": {"kind": "nope"}})
 
 
 @pytest.mark.parametrize(
@@ -421,3 +421,12 @@ def test_boolean_labels_accept_yaml_bool_keys() -> None:
     loaded = parse_block({"value": {"kind": "boolean", "labels": {True: "Yes", False: "No"}}})
     quoted = parse_block({"value": {"kind": "boolean", "labels": {"true": "Yes", "false": "No"}}})
     assert loaded == quoted
+
+
+def test_slayerblock_is_gone() -> None:
+    import s_layer_semantic_formats
+
+    assert "SLayerBlock" not in s_layer_semantic_formats.__all__
+    assert "SemanticFormat" in s_layer_semantic_formats.__all__
+    with pytest.raises(ImportError, match="SLayerBlock"):
+        exec("from s_layer_semantic_formats import SLayerBlock")

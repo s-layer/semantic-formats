@@ -28,7 +28,7 @@ reference.
 - `json_schema`, `load_schema`, `render_schema` (functions)
 
 ### src/s_layer_semantic_formats/_models.py
-- `SLayerBlock` (class) and its `kind`, `additivity`, `extensions`, `normal_form` members
+- `SemanticFormat` (class) and its `kind`, `additivity`, `extensions`, `normal_form` members
 - `Display`, `Decimals`, `Time`, `Aggregation` (section classes)
 - `NumberValue`, `CountValue`, `CurrencyValue`, `PercentageValue`, `DurationValue`,
   `BytesValue`, `QuantityValue`, `ScoreValue`, `CategoryValue`, `GeoValue`, `DateValue`,
