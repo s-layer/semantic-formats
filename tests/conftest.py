@@ -5,3 +5,6 @@ from hypothesis import HealthCheck, settings
 settings.register_profile("default", deadline=None, suppress_health_check=[HealthCheck.too_slow])
 settings.register_profile("ci", parent=settings.get_profile("default"), max_examples=500)
 settings.load_profile("default")
+
+# Under CI, a skipped test fails the run (tests/ci_skips.py).
+pytest_plugins = ["tests.ci_skips"]
