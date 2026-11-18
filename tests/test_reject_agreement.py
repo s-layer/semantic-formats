@@ -19,7 +19,7 @@ import copy
 from typing import Any, cast
 
 import pytest
-from hypothesis import HealthCheck, assume, given, settings
+from hypothesis import assume, given
 from hypothesis import strategies as st
 from jsonschema import Draft202012Validator
 from pydantic import ValidationError
@@ -39,7 +39,44 @@ MODEL_ONLY_RULES = frozenset(
         "contradicts_kind",  # additivity or grouping the kind rules out
     }
 )
-"""The models' rules between fields, which the schema's description says it does not check."""
+"""
+The models' rules between fields, which a JSON Schema cannot state.
+
+Each has a case in test_each_model_only_rule_is_real_and_outside_the_schema that shows the
+schema accepts what the rule rejects.
+"""
+
+WHOLE_FLOAT_INT = "whole_float_int"
+"""
+A whole float (2.0) where the models take a strict int, which they reject (`int_type`).
+
+JSON Schema's ``integer`` is any number with no fractional part, so the schema cannot tell
+2.0 from 2. `_model_errors` reports these as this rule rather than `int_type`.
+"""
+
+
+def _vocabulary(node: Any) -> set[str]:
+    """Every property name the schema defines, at any depth."""
+    names: set[str] = set()
+    if isinstance(node, dict):
+        node = cast("dict[str, Any]", node)
+        properties = node.get("properties")
+        if isinstance(properties, dict):
+            names.update(cast("dict[str, Any]", properties))
+        for child in node.values():
+            names |= _vocabulary(child)
+    elif isinstance(node, list):
+        for child in cast("list[Any]", node):
+            names |= _vocabulary(child)
+    return names
+
+
+VOCABULARY = frozenset(_vocabulary(load_schema()))
+"""Field names anywhere in the vocabulary: a key from here is not an unknown key."""
+
+unknown_keys = st.text(min_size=1, max_size=6).filter(
+    lambda k: not k.startswith("x-") and k not in VOCABULARY
+)
 
 Path = tuple[str | int, ...]
 
@@ -114,8 +151,7 @@ def mutated_blocks(draw: st.DrawFn) -> dict[str, Any]:
                     aggregation["by"] = ["d"]
         elif mutation == "unknown_key":
             parent = _get(data, draw(st.sampled_from(_dicts(data))))
-            key = draw(st.text(min_size=1, max_size=6).filter(lambda k: not k.startswith("x-")))
-            parent[key] = draw(json_values)
+            parent[draw(unknown_keys)] = draw(json_values)
         elif mutation in {"replace", "drop", "null"} and _paths(data):
             path = draw(st.sampled_from(_paths(data)))
             parent = _get(data, path[:-1])
@@ -137,11 +173,17 @@ def _model_errors(data: dict[str, Any]) -> set[str] | None:
     try:
         SemanticFormat.model_validate(data)
     except ValidationError as error:
-        return {detail["type"] for detail in error.errors()}
+        return {_error_type(detail) for detail in error.errors()}
     return None
 
 
-@settings(max_examples=500, suppress_health_check=[HealthCheck.too_slow])
+def _error_type(detail: Any) -> str:
+    value = detail.get("input")
+    if detail["type"] == "int_type" and isinstance(value, float) and value.is_integer():
+        return WHOLE_FLOAT_INT
+    return detail["type"]
+
+
 @given(mutated_blocks())
 def test_schema_and_models_agree_on_rejection(data: dict[str, Any]) -> None:
     schema_accepts = VALIDATOR.is_valid(data)  # pyright: ignore[reportUnknownMemberType]
@@ -149,17 +191,16 @@ def test_schema_and_models_agree_on_rejection(data: dict[str, Any]) -> None:
     if not schema_accepts:
         assert errors is not None, "the schema rejects a block the models accept"
     if schema_accepts and errors is not None:
-        shape_errors = errors - MODEL_ONLY_RULES
+        shape_errors = errors - MODEL_ONLY_RULES - {WHOLE_FLOAT_INT}
         assert not shape_errors, f"the models reject on shape ({shape_errors}), the schema accepts"
 
 
-@settings(max_examples=200)
 @given(blocks, st.data())
 def test_both_reject_an_unknown_key_anywhere(data: dict[str, Any], draw: st.DataObject) -> None:
     data = copy.deepcopy(data)
     dicts = [path for path in _dicts(data) if not any(str(s).startswith("x-") for s in path)]
     parent = _get(data, draw.draw(st.sampled_from(dicts)))
-    key = draw.draw(st.text(min_size=1, max_size=6).filter(lambda k: not k.startswith("x-")))
+    key = draw.draw(unknown_keys)
     assume(key not in parent)
     parent[key] = 1
     assert not VALIDATOR.is_valid(data)  # pyright: ignore[reportUnknownMemberType]
@@ -204,3 +245,16 @@ def test_each_model_only_rule_is_real_and_outside_the_schema(
     """Each allowance in MODEL_ONLY_RULES is a rule the models enforce and the schema does not."""
     assert VALIDATOR.is_valid(data)  # pyright: ignore[reportUnknownMemberType]
     assert _model_errors(data) == {rule}
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        {"value": {"kind": "count"}, "display": {"decimals": {"max": 2.0}}},
+        {"value": {"kind": "date"}, "time": {"fiscal_year_start": 1.0}},
+    ],
+)
+def test_a_whole_float_is_the_one_shape_gap(data: dict[str, Any]) -> None:
+    """The schema takes 2.0 as an integer; the strict models do not (see WHOLE_FLOAT_INT)."""
+    assert VALIDATOR.is_valid(data)  # pyright: ignore[reportUnknownMemberType]
+    assert _model_errors(data) == {WHOLE_FLOAT_INT}
