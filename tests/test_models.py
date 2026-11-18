@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
+from pydantic import ValidationError
 
 from s_layer_semantic_formats import (
     KINDS,
@@ -367,13 +368,15 @@ def test_extension_values_must_be_json() -> None:
 
 def test_models_are_frozen() -> None:
     block = parse_block({"value": {"kind": "count"}})
-    with pytest.raises(Exception):  # noqa: B017 - pydantic raises its own ValidationError
+    with pytest.raises(ValidationError) as caught:
         block.label = "Orders"
+    assert [(e["type"], e["loc"]) for e in caught.value.errors()] == [
+        ("frozen_instance", ("label",))
+    ]
+    assert block.label is None
 
 
 def test_direct_model_validation_raises_pydantic_errors() -> None:
-    from pydantic import ValidationError
-
     with pytest.raises(ValidationError):
         SemanticFormat.model_validate({"value": {"kind": "nope"}})
 
