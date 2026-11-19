@@ -8,14 +8,20 @@ description: Prove a change to s-layer-semantic-formats works end to end. Use be
 Run from the repository root:
 
 ```bash
+export CI=true  # CI's skip gate: a skipped test fails the run
 uv sync --locked --dev
+uv tool install prek  # once; skip if prek is already on PATH
 prek run --all-files
 uv run pytest --hypothesis-profile=ci
 ```
 
-It passes when every command exits 0. prek includes the check that the committed JSON
-Schema matches the models; `just schema` regenerates it. The `ci` Hypothesis profile
-runs more examples than the default.
+It passes when every command exits 0 and every printed `rc=` is 0. prek includes the
+check that the committed JSON Schema matches the models; `just schema` regenerates it.
+The `ci` Hypothesis profile runs more examples than the default.
+
+`CI=true` turns on `tests/ci_skips.py`, which fails the run on any skip not allowed
+there, as CI does. Without it a skipped test only shows in the summary, and a run that
+skipped what you changed is not a pass.
 
 Take each command's exit status from the command itself. In a pipeline `$?` is the last
 command's status, so `cmd | tail` hides a failure. Redirect long output to a file, then
@@ -29,6 +35,7 @@ read the file.
 
 - consumers: a vocabulary change also needs dbt-s-layer's and semolina's suites run
   against it
+- Python versions other than the one you ran: CI runs a version matrix
 
 ## When it fails
 

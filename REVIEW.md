@@ -20,7 +20,8 @@ Lead with the Important findings. If there are none, say so in one line.
 
 - The vocabulary is shared by dbt-s-layer, semolina and the warehouse carriers: a change
   that makes a previously valid `s_layer` block invalid is a breaking change and needs a
-  version note.
+  conventional-commit `!` or a `BREAKING CHANGE` footer, which git-cliff turns into the
+  release notes.
 - The Pydantic models and the committed JSON Schema accept and reject the same blocks.
 - Normal forms round-trip: parsing then dumping then parsing gives the same model.
 
@@ -30,10 +31,13 @@ Apply a check only when its trigger matches the diff. Each one comes from a miss
 already happened, named under "Source".
 
 - **When the diff touches AGENTS.md, CLAUDE.md, REVIEW.md or anything under `.claude/`**
-  Check: Important: list every rule the change adds, loosens or removes, and review the
-  rest of the diff against the base branch's copy of these files, not the PR's.
-  Source: the review bot reads these files from the PR's own checkout (checked
-  2026-11-19), so a PR can rewrite the rules it is reviewed against.
+  Check: Important unless the PR description lists every rule the change adds, loosens or
+  removes. Either way, list those rule changes in the review, and review the rest of the
+  diff against the base branch's copy of these files, not the PR's. Once the rule changes
+  are listed and acknowledged, the finding no longer blocks.
+  Source: the review bot reads the root AGENTS.md, CLAUDE.md and REVIEW.md from the PR's
+  own checkout (checked 2026-11-19), so a PR can rewrite the rules it is reviewed against.
+  `.claude/` is included as a precaution.
 - **When the diff changes a model**
   Check: `just schema` was run and `s_layer.schema.json` changed with it, and the
   reject-side agreement property covers the new field (an invalid value is rejected by
@@ -57,12 +61,16 @@ already happened, named under "Source".
   Check: Important unless the PR says why. A refactor carries its tests with it.
   Source: the coverage-forward refactoring rule (duckdb-semantic-views CLAUDE.md), which
   applies to every s-layer repo.
-- **When the diff adds a retry, a rerun, a longer timeout or a sleep to get a test
-  passing**
+- **When the diff adds a retry, a rerun, a longer timeout or a sleep to make a flaky test
+  pass**
   Check: Important. A flaky test is fixed, or deleted with the reason written down. It is
-  never rerun into green.
-  Source: standing project rule since 2026-10-19 (never re-run CI for a lucky green).
+  never rerun into green. A timeout raised because a job really got slower is not this.
+  Source: a maintainer rule for all s-layer repos, set 2026-10-19 after a flaky failure
+  was rerun instead of fixed: never re-run CI hoping for a lucky green.
 - **When the diff changes a `uses:` line under `.github/workflows/`**
-  Check: refs are tags, not branches or SHAs.
-  Source: the GitHub Actions lockfile section in CLAUDE.md / AGENTS.md; a branch ref broke
-  every job's setup when the branch was force-pushed.
+  Check: an action is referenced by a release tag, not a branch or a commit SHA. Local
+  workflows (`uses: ./...`) carry no ref, and the reusable review-bot workflow
+  (`anentropic/github-reviewbot/...@main`) and `pypa/gh-action-pypi-publish@release/v1`
+  (the ref pypa documents) run at a branch on purpose; none of these is a finding.
+  Source: a branch ref (`dtolnay/rust-toolchain@stable`) broke every job's setup in
+  arrowmodel when the branch was force-pushed, and Dependabot only bumps tags.
