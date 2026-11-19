@@ -14,9 +14,9 @@ prek run --all-files
 CI=true uv run pytest --hypothesis-profile=ci
 ```
 
-It passes when every command exits 0 and every printed `rc=` is 0. prek includes the
-check that the committed JSON Schema matches the models; `just schema` regenerates it.
-The `ci` Hypothesis profile runs more examples than the default.
+It passes when every command exits 0. prek includes the check that the committed JSON
+Schema matches the models; `just schema` regenerates it. The `ci` Hypothesis profile
+runs more examples than the default.
 
 `CI=true` turns on `tests/ci_skips.py`, which fails the run on any skip not allowed
 there, as CI does. Without it a skipped test only shows in the summary, and a run that
